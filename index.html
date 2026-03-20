@@ -644,7 +644,7 @@ function init() {
   }
  
 }
-
+  
 function finishSetup() {
   const name = document.getElementById('setupName').value.trim();
   const bal  = parseFloat(document.getElementById('setupBalance').value) || 0;
@@ -829,7 +829,7 @@ Regras:
 - Sê conciso (máx 3 linhas)
 - Formato monetário: €XX,XX`;
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://finbot-proxy.afonsomarquesdacosta.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
