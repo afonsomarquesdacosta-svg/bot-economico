@@ -490,14 +490,14 @@ textarea::placeholder { color: var(--text2); }
   </div>
 
   <div class="setup-hint">
-    A tua chave API Anthropic é necessária para o assistente funcionar.<br>
-    <a href="https://console.anthropic.com/settings/keys" target="_blank">Obtém a tua chave gratuita aqui →</a>
+    A tua chave API Groq é necessária para o assistente funcionar.<br>
+    <a href="https://console.groq.com/keys" target="_blank">Obtém a tua chave gratuita aqui →</a>
   </div>
 
   <div class="setup-label">Chave API Anthropic</div>
   <div class="setup-input-wrap">
     <span>🔑</span>
-    <input type="password" id="setupKey" placeholder="sk-ant-...">
+    <input type="password" id="setupKey" placeholder="gsk_...">
   </div>
 
   <div class="setup-hint">A chave é guardada apenas no teu dispositivo.</div>
@@ -642,9 +642,11 @@ function init() {
     showScreen('chatScreen');
     restoreMessages();
   }
- 
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
 }
-  
+
 function finishSetup() {
   const name = document.getElementById('setupName').value.trim();
   const bal  = parseFloat(document.getElementById('setupBalance').value) || 0;
@@ -831,18 +833,17 @@ Regras:
 
     const res = await fetch('https://finbot-proxy.afonsomarquesdacosta.workers.dev', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 800,
-        system: sys,
-        messages: chatHistory.slice(-20)
+        messages: [{ role: 'system', content: sys }, ...chatHistory.slice(-20)]
       })
     });
 
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-    const raw = (data.content || []).map(b => b.text || '').join('');
+    const raw = data.choices?.[0]?.message?.content || '';
     let parsed;
     try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
     catch { parsed = { message: raw, transactions: [] }; }
